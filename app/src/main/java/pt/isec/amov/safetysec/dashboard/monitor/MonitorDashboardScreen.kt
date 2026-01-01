@@ -16,6 +16,8 @@ fun MonitorDashboardScreen(
     viewModel: MonitorDashboardViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val otpInput by remember { derivedStateOf { viewModel.otpInput } }
+    val otpMessage by remember { derivedStateOf { viewModel.otpMessage } }
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
@@ -52,6 +54,27 @@ fun MonitorDashboardScreen(
             items(uiState.statistics.entries.toList()) { entry ->
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Text("${entry.key}: ${entry.value}", modifier = Modifier.padding(8.dp))
+                }
+            }
+
+            // Associar um protegido com a pass
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Associate Protected User:", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = otpInput,
+                    onValueChange = viewModel::onOtpChange,
+                    label = { Text("Enter OTP") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Button(
+                    onClick = { viewModel.linkProtectedWithOtp() },
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text("Associate Protected")
+                }
+                otpMessage?.let {
+                    Text(it, modifier = Modifier.padding(top = 8.dp))
                 }
             }
         }

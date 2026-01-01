@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -16,6 +17,8 @@ fun ProtectedDashboardScreen(
     viewModel: ProtectedDashboardViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val otp by remember { derivedStateOf { viewModel.otp } }
+    val otpError by remember { derivedStateOf { viewModel.otpError } }
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
@@ -60,6 +63,24 @@ fun ProtectedDashboardScreen(
             items(uiState.activeRules) { rule ->
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Text(rule, modifier = Modifier.padding(8.dp))
+                }
+            }
+
+            // Gerar a one time pass
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Generate Association Code:", style = MaterialTheme.typography.titleMedium)
+                Button(
+                    onClick = { viewModel.generateOtp() },
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text("Generate OTP")
+                }
+                otp?.let {
+                    Text("Your code: $it", modifier = Modifier.padding(top = 8.dp))
+                }
+                otpError?.let {
+                    Text("Error: $it", color = Color.Red, modifier = Modifier.padding(top = 4.dp))
                 }
             }
         }
