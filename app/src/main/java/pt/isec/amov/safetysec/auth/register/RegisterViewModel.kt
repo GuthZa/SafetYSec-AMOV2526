@@ -6,7 +6,8 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import pt.isec.amov.safetysec.data.repository.UserProfile
+import pt.isec.amov.safetysec.data.model.User
+import pt.isec.amov.safetysec.data.model.UserRole
 import pt.isec.amov.safetysec.data.repository.UserRepository
 
 class RegisterViewModel : ViewModel() {
@@ -40,6 +41,7 @@ class RegisterViewModel : ViewModel() {
     fun register(onSuccess: () -> Unit) {
         val state = _uiState.value
 
+        // Validações
         if (
             state.name.isBlank() ||
             state.email.isBlank() ||
@@ -60,51 +62,38 @@ class RegisterViewModel : ViewModel() {
 
         _uiState.value = state.copy(isLoading = true, errorMessage = null)
 
-//        firebaseAuth
-//            .createUserWithEmailAndPassword(state.email, state.password)
-//            .addOnCompleteListener { task ->
-//                if (task.isSuccessful) {
-//                    // Firestore profile creation comes next
-//                    onSuccess()
-//                } else {
-//                    _uiState.value = _uiState.value.copy(
-//                        isLoading = false,
-//                        errorMessage = task.exception?.localizedMessage
-//                            ?: "Registration failed"
-//                    )
-//                }
-//            }
         firebaseAuth.createUserWithEmailAndPassword(state.email, state.password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Firestore profile creation
                     viewModelScope.launch {
                         try {
-                            val profile = UserProfile(
+                            val roles = buildList {
+                                if (state.isMonitor) add(UserRole.MONITOR)
+                                if (state.isProtected) add(UserRole.PROTECTED)
+                            }
+
+                            val user = User(
+                                email = state.email,
                                 name = state.name,
-                                roles = buildList {
-                                    if (state.isMonitor) add("Monitor")
-                                    if (state.isProtected) add("Protected")
-                                },
-                                authorizedMonitors = emptyList(),
-                                activeRules = emptyList(),
-                                alertCancelCode = "0000"
+                                roles = roles,
+                                cancelAlertCode = "0000"
                             )
 
-                            userRepository.createUserProfile(profile)
+                            userRepository.createUser(user)
                             onSuccess()
 
                         } catch (e: Exception) {
                             _uiState.value = _uiState.value.copy(
                                 isLoading = false,
-                                errorMessage = e.message ?: "Failed to create profile"
+                                errorMessage = e.message ?: "Failed to create user"
                             )
                         }
                     }
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = task.exception?.localizedMessage ?: "Registration failed"
+                        errorMessage = task.exception?.localizedMessage
+                            ?: "Registration failed"
                     )
                 }
             }

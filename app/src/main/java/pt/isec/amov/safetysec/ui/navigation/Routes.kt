@@ -8,4 +8,5 @@ sealed class Routes(val route: String) {
     object Rules : Routes("rules")
     object Alerts : Routes("alerts")
     object Profile : Routes("profile")
+    object RoleSelection : Routes("role_selection")
 }

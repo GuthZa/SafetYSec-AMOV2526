@@ -14,6 +14,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import pt.isec.amov.safetysec.data.model.User
+import pt.isec.amov.safetysec.data.model.UserRole
 import pt.isec.amov.safetysec.ui.navigation.Routes
 
 @Composable
@@ -87,38 +89,32 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-//                onClick = {
-//                    viewModel.login {
-//                        navController.navigate("dashboard") {
-//                            popUpTo("login") { inclusive = true }
-//                        }
-//                    }
-//                },
                 onClick = {
-                    viewModel.login { profile ->
-                        // Role-based routing
+                    viewModel.login {
+                        val user = viewModel.currentUser.value?: return@login
                         when {
-                            profile.roles.contains("Protected") && profile.roles.contains("Monitor") -> {
-                                // TODO: route to role selection screen if both
-                                navController.navigate("roleSelection") {
+                            user.roles.contains(UserRole.MONITOR) &&
+                                    user.roles.contains(UserRole.PROTECTED) -> {
+                                navController.navigate(Routes.RoleSelection.route) {
                                     popUpTo(Routes.Login.route) { inclusive = true }
                                 }
                             }
-                            profile.roles.contains("Protected") -> {
+
+                            user.roles.contains(UserRole.PROTECTED) -> {
                                 navController.navigate(Routes.ProtectedDashboard.route) {
                                     popUpTo(Routes.Login.route) { inclusive = true }
                                 }
                             }
-                            profile.roles.contains("Monitor") -> {
+
+                            user.roles.contains(UserRole.MONITOR) -> {
                                 navController.navigate(Routes.MonitorDashboard.route) {
                                     popUpTo(Routes.Login.route) { inclusive = true }
                                 }
                             }
+
                             else -> {
-                                // Default fallback
-                                navController.navigate(Routes.Login.route) {
-                                    popUpTo(Routes.Login.route) { inclusive = true }
-                                }
+                                // fallback de segurança
+                                navController.navigate(Routes.Login.route)
                             }
                         }
                     }
@@ -139,7 +135,8 @@ fun LoginScreen(
             }
 
             Spacer(modifier = Modifier.height(48.dp))
-            Row (
+
+            Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -153,7 +150,6 @@ fun LoginScreen(
                     Text("Register")
                 }
             }
-
         }
     }
 }

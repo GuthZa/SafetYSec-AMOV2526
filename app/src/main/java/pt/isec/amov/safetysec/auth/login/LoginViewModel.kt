@@ -1,13 +1,12 @@
 package pt.isec.amov.safetysec.auth.login
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import pt.isec.amov.safetysec.data.repository.UserProfile
+import pt.isec.amov.safetysec.data.model.User
 import pt.isec.amov.safetysec.data.repository.UserRepository
 
 class LoginViewModel : ViewModel() {
@@ -18,6 +17,10 @@ class LoginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser
+
+
     fun onEmailChange(email: String) {
         _uiState.value = _uiState.value.copy(email = email)
     }
@@ -26,7 +29,8 @@ class LoginViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(password = password)
     }
 
-    fun login(onSuccess: (UserProfile) -> Unit) {
+    fun login(onSuccess: (User) -> Unit) {
+        val user = firebaseAuth.currentUser
         val state = _uiState.value
 
         if (state.email.isBlank() || state.password.isBlank()) {
@@ -60,9 +64,9 @@ class LoginViewModel : ViewModel() {
                     // Fetch profile
                     viewModelScope.launch {
                         try {
-                            val profile = userRepository.getCurrentUserProfile()
-                            if (profile != null) {
-                                onSuccess(profile)
+                            val user = userRepository.getCurrentUser()
+                            if (user != null) {
+                                onSuccess(user)
                             } else {
                                 _uiState.value = _uiState.value.copy(
                                     isLoading = false,

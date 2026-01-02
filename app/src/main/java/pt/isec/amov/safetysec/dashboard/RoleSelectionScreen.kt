@@ -13,26 +13,43 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import pt.isec.amov.safetysec.data.model.User
+import pt.isec.amov.safetysec.data.model.UserRole
 import pt.isec.amov.safetysec.ui.navigation.Routes
 
 @Composable
-fun RoleSelectionScreen(navController: NavController) {
+fun RoleSelectionScreen(
+    navController: NavController,
+    user: User
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Choose a role to continue", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            "Choose a role to continue",
+            style = MaterialTheme.typography.headlineMedium
+        )
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(onClick = { navController.navigate(Routes.ProtectedDashboard.route) }) {
-            Text("Protected")
+        if (user.roles.contains(UserRole.PROTECTED)) {
+            Button(onClick = {
+                navController.navigate(Routes.ProtectedDashboard.route)
+            }) {
+                Text("Protected")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = { navController.navigate(Routes.MonitorDashboard.route) }) {
-            Text("Monitor")
+        if (user.roles.contains(UserRole.MONITOR)) {
+            Button(onClick = {
+                navController.navigate(Routes.MonitorDashboard.route)
+            }) {
+                Text("Monitor")
+            }
         }
     }
 }
+
