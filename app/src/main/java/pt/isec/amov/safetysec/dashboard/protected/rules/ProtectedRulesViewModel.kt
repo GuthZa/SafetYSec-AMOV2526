@@ -1,4 +1,4 @@
-package pt.isec.amov.safetysec.dashboard.protected_.rules
+package pt.isec.amov.safetysec.dashboard.protected.rules
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -12,7 +12,7 @@ import pt.isec.amov.safetysec.auth.login.LoginViewModel
 import pt.isec.amov.safetysec.auth.register.RegisterScreen
 import pt.isec.amov.safetysec.dashboard.RoleSelectionScreen
 import pt.isec.amov.safetysec.dashboard.monitor.MonitorDashboardScreen
-import pt.isec.amov.safetysec.dashboard.protected_.ProtectedDashboardScreen
+import pt.isec.amov.safetysec.dashboard.protected.ProtectedDashboardScreen
 
 @Composable
 fun NavGraph() {

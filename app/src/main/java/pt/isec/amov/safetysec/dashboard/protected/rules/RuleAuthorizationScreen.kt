@@ -1,4 +1,4 @@
-package pt.isec.amov.safetysec.dashboard.protected_.rules
+package pt.isec.amov.safetysec.dashboard.protected.rules
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

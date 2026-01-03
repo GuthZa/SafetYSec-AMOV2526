@@ -1,4 +1,4 @@
-package pt.isec.amov.safetysec.dashboard.protected_
+package pt.isec.amov.safetysec.dashboard.protected
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
