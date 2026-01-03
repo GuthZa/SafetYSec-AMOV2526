@@ -59,9 +59,11 @@ fun ProtectedDashboardScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Active Rules:", style = MaterialTheme.typography.titleMedium)
             }
-            items(uiState.activeRules) { rule ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Text(rule, modifier = Modifier.padding(8.dp))
+            items(uiState.rules) { rule ->
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    Text(rule.toString(), modifier = Modifier.padding(8.dp))
                 }
             }
 

@@ -30,7 +30,6 @@ class LoginViewModel : ViewModel() {
     }
 
     fun login(onSuccess: (User) -> Unit) {
-        val user = firebaseAuth.currentUser
         val state = _uiState.value
 
         if (state.email.isBlank() || state.password.isBlank()) {
@@ -66,6 +65,8 @@ class LoginViewModel : ViewModel() {
                         try {
                             val user = userRepository.getCurrentUser()
                             if (user != null) {
+                                _currentUser.value = user
+                                _uiState.value = _uiState.value.copy(isLoading = false)
                                 onSuccess(user)
                             } else {
                                 _uiState.value = _uiState.value.copy(

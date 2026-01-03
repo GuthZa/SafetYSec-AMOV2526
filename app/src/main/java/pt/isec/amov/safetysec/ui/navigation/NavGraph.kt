@@ -13,10 +13,10 @@ import pt.isec.amov.safetysec.auth.register.RegisterScreen
 import pt.isec.amov.safetysec.dashboard.RoleSelectionScreen
 import pt.isec.amov.safetysec.dashboard.monitor.MonitorDashboardScreen
 import pt.isec.amov.safetysec.dashboard.protected.ProtectedDashboardScreen
-
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
+    val loginViewModel: LoginViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -25,24 +25,21 @@ fun NavGraph() {
         composable(Routes.Login.route) {
             LoginScreen(
                 navController = navController,
-//                onLoginClick = { email, password ->
-//                    // Call LoginViewModel.login()
-//                },
-//                onRegisterClick = {
-//                    navController.navigate(Routes.Register.route)
-//                }
+                viewModel = loginViewModel
             )
         }
         composable(Routes.Register.route) { RegisterScreen(navController) }
         composable(Routes.ProtectedDashboard.route) { ProtectedDashboardScreen() }
         composable(Routes.MonitorDashboard.route) { MonitorDashboardScreen() }
         composable(Routes.RoleSelection.route) {
-            val loginViewModel: LoginViewModel = viewModel()
+            // Use the same shared ViewModel instance here
             val user by loginViewModel.currentUser.collectAsState()
 
+            // This will now have the user data from the login screen
             user?.let {
                 RoleSelectionScreen(navController, it)
             }
         }
     }
 }
+
