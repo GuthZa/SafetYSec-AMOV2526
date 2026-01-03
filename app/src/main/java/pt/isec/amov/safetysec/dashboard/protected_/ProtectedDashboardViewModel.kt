@@ -9,12 +9,13 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import pt.isec.amov.safetysec.data.model.Rule
 import pt.isec.amov.safetysec.data.repository.AssociationRepository
 
 data class ProtectedDashboardState(
     val recentAlerts: List<String> = emptyList(),
     val authorizedMonitors: List<String> = emptyList(),
-    val activeRules: List<String> = emptyList(),
+    val rules: List<Rule> = emptyList()
 )
 
 class ProtectedDashboardViewModel : ViewModel() {
