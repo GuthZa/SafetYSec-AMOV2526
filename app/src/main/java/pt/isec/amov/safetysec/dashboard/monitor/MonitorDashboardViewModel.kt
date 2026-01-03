@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,35 +24,53 @@ class MonitorDashboardViewModel : ViewModel() {
 
     private val associationRepository = AssociationRepository()
 
-    // Novo: OTP input
     var otpInput by mutableStateOf("")
         private set
 
-    var otpMessage by mutableStateOf<String?>(null)
+    var otpSuccess by mutableStateOf<String?>(null)
+        private set
+
+    var otpError by mutableStateOf<String?>(null)
         private set
 
     fun loadData() {
-        _uiState.value = MonitorDashboardState(
-            recentAlerts = listOf("John: Fall detected", "Mary: Speed limit exceeded"),
-            protectedStatus = mapOf("John" to "Safe", "Mary" to "Inactive"),
-            statistics = mapOf("Total Alerts" to "10", "Avg Response Time" to "15s")
-        )
+        loadProtectedUsers()
+        // alertas e estatísticas entram depois
     }
 
-    // Atualiza valor da one time pass
+    private fun loadProtectedUsers() {
+        viewModelScope.launch {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val protectedIds = associationRepository.getProtectedUsers(uid)
+
+            _uiState.value = _uiState.value.copy(
+                protectedStatus = protectedIds.associateWith { "Unknown" }
+            )
+        }
+    }
+
     fun onOtpChange(value: String) {
         otpInput = value
     }
 
-    // Associa a um protegido
     fun linkProtectedWithOtp() {
+        if (otpInput.isBlank()) {
+            otpError = "OTP required"
+            return
+        }
+
         viewModelScope.launch {
             try {
                 associationRepository.linkWithOtp(otpInput)
-                otpMessage = "Association successful"
+                otpSuccess = "Association successful"
+                otpError = null
+                otpInput = ""
+                loadProtectedUsers()
             } catch (e: Exception) {
-                otpMessage = e.message
+                otpError = e.message
+                otpSuccess = null
             }
         }
     }
 }
+

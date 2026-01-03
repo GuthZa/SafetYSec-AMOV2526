@@ -69,20 +69,39 @@ fun ProtectedDashboardScreen(
             // Gerar a one time pass
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Generate Association Code:", style = MaterialTheme.typography.titleMedium)
+                Text("Generate Association Code", style = MaterialTheme.typography.titleMedium)
+
                 Button(
                     onClick = { viewModel.generateOtp() },
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Text("Generate OTP")
                 }
+
                 otp?.let {
-                    Text("Your code: $it", modifier = Modifier.padding(top = 8.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Text(
+                            text = "Your code: $it",
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
                 }
+
                 otpError?.let {
-                    Text("Error: $it", color = Color.Red, modifier = Modifier.padding(top = 4.dp))
+                    Text(
+                        it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
             }
+
         }
     }
 }

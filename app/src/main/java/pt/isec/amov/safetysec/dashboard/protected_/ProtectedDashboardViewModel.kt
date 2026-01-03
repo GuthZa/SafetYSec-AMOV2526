@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,21 +23,29 @@ class ProtectedDashboardViewModel : ViewModel() {
     val uiState: StateFlow<ProtectedDashboardState> = _uiState
 
     private val associationRepository = AssociationRepository()
+
     var otp by mutableStateOf<String?>(null)
         private set
+
     var otpError by mutableStateOf<String?>(null)
         private set
 
     fun loadData() {
-        // TODO: Connect to Firebase to fetch alerts, rules, monitors
-        _uiState.value = ProtectedDashboardState(
-            recentAlerts = listOf("Fall detected - 12:03", "Speed limit exceeded - 09:30"),
-            authorizedMonitors = listOf("Alice", "Bob"),
-            activeRules = listOf("Fall", "Geofencing")
-        )
+        loadAuthorizedMonitors()
+        // alertas e regras entram depois
     }
 
-    // Novo: gerar a One time pass para associação
+    private fun loadAuthorizedMonitors() {
+        viewModelScope.launch {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val monitors = associationRepository.getMonitors(uid)
+
+            _uiState.value = _uiState.value.copy(
+                authorizedMonitors = monitors
+            )
+        }
+    }
+
     fun generateOtp() {
         viewModelScope.launch {
             try {
@@ -48,3 +57,4 @@ class ProtectedDashboardViewModel : ViewModel() {
         }
     }
 }
+

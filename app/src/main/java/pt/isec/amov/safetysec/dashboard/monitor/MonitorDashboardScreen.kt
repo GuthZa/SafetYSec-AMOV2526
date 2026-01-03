@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -17,7 +18,6 @@ fun MonitorDashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val otpInput by remember { derivedStateOf { viewModel.otpInput } }
-    val otpMessage by remember { derivedStateOf { viewModel.otpMessage } }
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
@@ -60,23 +60,33 @@ fun MonitorDashboardScreen(
             // Associar um protegido com a pass
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Associate Protected User:", style = MaterialTheme.typography.titleMedium)
+                Text("Associate Protected User", style = MaterialTheme.typography.titleMedium)
+
                 OutlinedTextField(
                     value = otpInput,
                     onValueChange = viewModel::onOtpChange,
                     label = { Text("Enter OTP") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
+
                 Button(
                     onClick = { viewModel.linkProtectedWithOtp() },
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 8.dp),
+                    enabled = otpInput.isNotBlank()
                 ) {
-                    Text("Associate Protected")
+                    Text("Associate")
                 }
-                otpMessage?.let {
-                    Text(it, modifier = Modifier.padding(top = 8.dp))
+
+                viewModel.otpSuccess?.let {
+                    Text(it, color = Color(0xFF2E7D32), modifier = Modifier.padding(top = 4.dp))
+                }
+
+                viewModel.otpError?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 4.dp))
                 }
             }
+
         }
     }
 }

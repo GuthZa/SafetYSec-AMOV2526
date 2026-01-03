@@ -16,45 +16,51 @@ class AssociationRepository {
 
     suspend fun generateOtp(): String {
         val protectedId = auth.currentUser?.uid
-            ?: throw Exception("Not logged in")
+            ?: throw Exception("Not authenticated")
 
         val otp = (100000..999999).random().toString()
 
         val otpLink = OtpLink(
+            code = otp,
             protectedId = protectedId,
-            expiresAt = Timestamp.now().seconds + 300
+            expiresAt = System.currentTimeMillis() / 1000 + 300
         )
 
         firestore.collection("otp_links")
-            .document(otp)
-            .set(otpLink)
+            .add(otpLink)
             .await()
 
         return otp
     }
 
-    suspend fun linkWithOtp(otp: String) {
+    suspend fun linkWithOtp(code: String) {
         val monitorId = auth.currentUser?.uid
-            ?: throw Exception("Not logged in")
+            ?: throw Exception("Not authenticated")
 
-        val docRef = firestore.collection("otp_links").document(otp)
-        val doc = docRef.get().await()
+        val snapshot = firestore.collection("otp_links")
+            .whereEqualTo("code", code)
+            .whereEqualTo("used", false)
+            .get()
+            .await()
 
-        if (!doc.exists()) throw Exception("Invalid OTP")
+        if (snapshot.isEmpty)
+            throw Exception("Invalid or expired OTP")
 
+        val doc = snapshot.documents.first()
         val otpLink = doc.toObject(OtpLink::class.java)
             ?: throw Exception("Invalid OTP data")
 
-        if (otpLink.expiresAt < Timestamp.now().seconds)
+        if (otpLink.expiresAt < System.currentTimeMillis() / 1000)
             throw Exception("OTP expired")
 
         if (otpLink.protectedId == monitorId)
             throw Exception("You cannot associate yourself")
 
-        // duplicados
+        // Verificar duplicados
         val existing = firestore.collection("associations")
             .whereEqualTo("monitorId", monitorId)
             .whereEqualTo("protectedId", otpLink.protectedId)
+            .whereEqualTo("status", "ACTIVE")
             .get()
             .await()
 
@@ -63,14 +69,16 @@ class AssociationRepository {
 
         val association = Association(
             monitorId = monitorId,
-            protectedId = otpLink.protectedId
+            protectedId = otpLink.protectedId,
+            status = "ACTIVE"
         )
 
         firestore.collection("associations")
             .add(association)
             .await()
 
-        docRef.delete().await()
+        // Marcar OTP como usado
+        doc.reference.update("used", true).await()
     }
 
     /* ================= QUERIES ================= */
